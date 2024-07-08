@@ -1,0 +1,80 @@
+spring:
+  application:
+    name: order-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/order_db
+    username: yourusername
+    password: yourpassword
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  rabbitmq:
+    host: localhost
+    port: 5672
+
+management:
+  endpoint:
+    circuitbreakers:
+      enabled: true
+    health:
+      enabled: true
+      show-details: always
+    prometheus:
+      enabled: true
+    shutdown:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        exclude: httptrace
+        include: '*'
+  health:
+    circuitbreakers:
+      enabled: true
+  metrics:
+    distribution:
+      percentiles-histogram:
+        '"[http':
+          server:
+            requests]": true
+        resilience4j:
+          circuitbreaker:
+            calls: true
+    enable:
+      resilience4j:
+        circuitbreaker:
+          calls: true
+
+# Circuitbreaker properties
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        registerHealthIndicator: true
+    metrics:
+      legacy:
+        enabled: true
+
+cache:
+  redis:
+    entry-ttl-seconds: 60
+    command-timeout-seconds: 5
+    connect-timeout-seconds: 5
+
+resilience4j.retry:
+  instances:
+  retryOrder:
+    maxRetryAttempts: 5
+    waitDuration: 10000
+    retry-exceptions:
+      - java.util.concurrent.TimeoutException
+
+resilience4j.ratelimiter:
+  instances:
+    orderService:
+      timeoutDuration: 1000ms
+      limitRefreshPeriod: 5000
+      limitForPeriod: 5
